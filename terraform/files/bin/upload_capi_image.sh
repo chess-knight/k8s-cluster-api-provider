@@ -10,13 +10,13 @@ IMG_RAW=$(yq eval '.OPENSTACK_IMAGE_RAW' $CCCFG)
 IMGREG_EXTRA=$(yq eval '.OPENSTACK_IMAGE_REGISTRATION_EXTRA_FLAGS' $CCCFG)
 
 VERSION_CAPI_IMAGE=$(echo $KUBERNETES_VERSION | sed 's/\.[[:digit:]]*$//g')
-UBU_IMG=ubuntu-2004-kube-$KUBERNETES_VERSION
+UBU_IMG=ubuntu-2204-kube-$KUBERNETES_VERSION
 
 WAITLOOP=64
 #download/upload image to openstack
 CAPIIMG=$(openstack image list --name "$UBU_IMG_NM")
 IMGURL=https://minio.services.osism.tech/openstack-k8s-capi-images
-IMAGESRC=$IMGURL/ubuntu-2004-kube-$VERSION_CAPI_IMAGE/$UBU_IMG.qcow2
+IMAGESRC=$IMGURL/ubuntu-2204-kube-$VERSION_CAPI_IMAGE/$UBU_IMG.qcow2
 if test -z "$CAPIIMG"; then
   # TODO: Check signature
   wget $IMAGESRC
@@ -37,7 +37,7 @@ if test -z "$CAPIIMG"; then
   #TODO min-disk, min-ram, other std. image metadata
   mkdir -p ~/tmp
   echo "Creating image $UBU_IMG_NM from $UBU_IMG.$FMT"
-  nohup openstack image create --disk-format $FMT --min-ram 1024 --min-disk $DISKSZ --property image_build_date="$IMGDATE" --property image_original_user=ubuntu --property architecture=x86_64 --property hypervisor_type=kvm --property os_distro=ubuntu --property os_version="20.04" --property hw_disk_bus=scsi --property hw_scsi_model=virtio-scsi --property hw_rng_model=virtio --property image_source=$IMAGESRC --property image_description="https://github.com/osism/k8s-capi-images" --property kubernetes_version=$KUBERNETES_VERSION --property replace_frequency=never --property provided_until=$UNTIL --property uuid_validity=$UNTIL --tag managed_by_osism $IMGREG_EXTRA --file $UBU_IMG.$FMT $UBU_IMG_NM  > ~/tmp/img-create-$UBU_IMG_NM.out &
+  nohup openstack image create --disk-format $FMT --min-ram 1024 --min-disk $DISKSZ --property image_build_date="$IMGDATE" --property image_original_user=ubuntu --property architecture=x86_64 --property hypervisor_type=kvm --property os_distro=ubuntu --property os_version="22.04" --property hw_disk_bus=scsi --property hw_scsi_model=virtio-scsi --property hw_rng_model=virtio --property image_source=$IMAGESRC --property image_description="https://github.com/osism/k8s-capi-images" --property kubernetes_version=$KUBERNETES_VERSION --property replace_frequency=never --property provided_until=$UNTIL --property uuid_validity=$UNTIL --tag managed_by_osism $IMGREG_EXTRA --file $UBU_IMG.$FMT $UBU_IMG_NM  > ~/tmp/img-create-$UBU_IMG_NM.out &
   CPID=$!
   sleep 5
   echo "Waiting for image $UBU_IMG_NM: "
